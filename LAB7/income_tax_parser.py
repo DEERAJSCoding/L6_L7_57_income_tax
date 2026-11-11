@@ -1,26 +1,64 @@
+
 def clean_pan(pan):
     """
-    Removes spaces from a PAN and upper-cases it.
-    Assumes pan is a non-empty string.
+    Removes spaces from a PAN and converts it to uppercase.
+    Returns an empty string for invalid input.
     """
-    return pan.strip().replace(' ', '').upper()
+    if not isinstance(pan, str):
+        return ""
+
+    return pan.strip().replace(" ", "").upper()
+
 
 def parse_amount(text):
     """
-    Converts an amount such as 'Rs 12,50,000' into an int.
-    Assumes only digits remain after removing 'Rs', commas and spaces.
+    Converts an amount such as 'Rs 12,50,000' into an integer.
+    Returns None for invalid input.
     """
-    text = text.replace('Rs', '').replace(',', '').strip()
+    if not isinstance(text, str):
+        return None
+
+    text = text.strip()
+
+    if not text:
+        return None
+
+    text = text.replace("Rs", "").replace("rs", "")
+    text = text.replace(",", "").replace(" ", "").strip()
+
+    if not text.isdigit():
+        return None
+
     return int(text)
+
 
 def parse_tax_slab(line):
     """
     Parses 'LOW-HIGH:RATE' into a (low, high, rate) tuple.
-    Assumes the line is always in that exact format.
+    Returns None for invalid input.
     """
-    limits, rate = line.split(':')
-    low, high = limits.split('-')
-    return int(low), int(high), int(rate)
+    if not isinstance(line, str):
+        return None
+
+    try:
+        limits, rate = line.split(":")
+        low, high = limits.split("-")
+
+        low = int(low.strip())
+        high = int(high.strip())
+        rate = int(rate.strip())
+
+        if low < 0 or high < 0 or rate < 0:
+            return None
+
+        if low > high:
+            return None
+
+        return low, high, rate
+
+    except (ValueError, AttributeError):
+        return None
+
 
 def main():
     print("==== Running clean_pan ====")
@@ -29,11 +67,14 @@ def main():
 
     print("\n==== Running parse_amount ====")
     value = input("Enter an amount (e.g. Rs 12,50,000): ")
-    print("Amount in rupees:", parse_amount(value))
+    result = parse_amount(value)
+    print("Amount in rupees:", result)
 
     print("\n==== Running parse_tax_slab ====")
     value = input("Enter a tax slab as LOW-HIGH:RATE (e.g. 250000-500000:5): ")
-    print("Tax slab (low, high, rate):", parse_tax_slab(value))
+    result = parse_tax_slab(value)
+    print("Tax slab (low, high, rate):", result)
+
 
 if __name__ == "__main__":
     main()
